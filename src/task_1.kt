@@ -1,4 +1,3 @@
-import java.lang.StringBuilder
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -7,7 +6,7 @@ val OPERATIONS: HashMap<String, Int> = hashMapOf("+" to 1, "-" to 1, "*" to 2, "
 
 class StackData(var data: String, var priority: Int, var haveBrackets: Boolean = false) {
 
-    public override fun toString(): String {
+    override fun toString(): String {
         if (haveBrackets && priority != 0) {
             return "($data)"
         }
@@ -21,22 +20,22 @@ fun main() {
     print("Enter line: ")
 
     val line = readLine()
-    val split_line = line?.split(' ')
+    val splitLine = line?.split(' ')
 
     try {
-        checkInputData(split_line as ArrayList<String>)
+        checkInputData(splitLine as ArrayList<String>)
     }
     catch (e: Exception) {
         println(e.message)
         return
     }
 
-    println(postToInf(split_line as ArrayList<String>).toString())
+    println(postToInf(splitLine).toString())
 }
 
 fun checkInputData(split_line: ArrayList<String>){
-    var countOperations: Int = 0
-    var countDigits: Int = 0
+    var countOperations = 0
+    var countDigits = 0
     for (elem in split_line) {
         if (elem in OPERATIONS.keys) {
             countOperations++
@@ -59,13 +58,11 @@ fun checkInputData(split_line: ArrayList<String>){
 
 
 fun postToInf(split_line: ArrayList<String>): StackData {
-    val result = StringBuilder()
     val stack:  ArrayDeque<StackData> = ArrayDeque()
-    val strings: ArrayList<String> = ArrayList()
     var operand1: StackData
     var operand2: StackData
-    var maxPriority: Int = 0
-    var i: Int = 0
+    var maxPriority: Int
+    var i = 0
     while (i < split_line.size) {
         val elem: String = split_line[i]
         if (elem in OPERATIONS.keys) {
