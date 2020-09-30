@@ -20,10 +20,18 @@ fun main() {
     print("Enter line: ")
 
     val line = readLine()
-    val splitLine = line?.split(' ')
+    val splitLine: ArrayList<String>
+    try {
+        splitLine = line?.split(' ') as ArrayList<String>
+    }
+    catch (e: Exception) {
+        println("invalid format")
+        return
+    }
 
     try {
-        checkInputData(splitLine as ArrayList<String>)
+
+        checkInputData(splitLine)
     }
     catch (e: Exception) {
         println(e.message)
