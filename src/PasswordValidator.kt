@@ -1,6 +1,12 @@
 import java.io.File
-import kotlin.math.log
 import kotlin.math.log2
+
+
+const val DICT_PATH = "src/pswd-dict.txt"
+
+val NUMBERS: Array<Char> = arrayOf(
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+)
 
 val DOWN_REGISTER: Array<Char> = arrayOf(
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
@@ -10,15 +16,12 @@ val UP_REGISTER: Array<Char> = arrayOf(
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
         'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 )
-var NUMBERS: Array<Char> = arrayOf(
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-)
-var SPECIAL_SYMBOLS: Array<Char> = arrayOf(
+val SPECIAL_SYMBOLS: Array<Char> = arrayOf(
         '-', '_', '.', '$', '#', '@', '!', '^', '*', '+'
 )
 
 
-abstract class Rule() {
+abstract class Rule {
 
     abstract fun checkRule(password: String)
 
@@ -43,14 +46,14 @@ class LenRule(_len: Int) : Rule() {
 
     override fun checkRule(password: String) {
         if (password.length < len) {
-            throw RuleException("Пароль должен быть не менее $len символов")
+            throw RuleException("Password has has less than $len symbols")
         }
     }
 
 }
 
 
-class RegisterRule() : Rule() {
+class RegisterRule : Rule() {
     override val name: String
         get() = "Register"
 
@@ -63,7 +66,7 @@ class RegisterRule() : Rule() {
             }
         }
         if (!condition) {
-            throw RuleException("Пароль не содержит символы нижнего регистра")
+            throw RuleException("Password has no DOWN_REGISTER")
         }
         condition = false
         for (symbol in password) {
@@ -73,13 +76,13 @@ class RegisterRule() : Rule() {
             }
         }
         if (!condition) {
-            throw RuleException("Пароль не содержит символы верхнего регистра")
+            throw RuleException("Password has no UP_REGISTER")
         }
     }
 }
 
 
-class NumberOrSpecialRule() : Rule() {
+class NumberOrSpecialRule : Rule() {
     override val name: String
         get() = "NumberOrSpecial"
 
@@ -93,7 +96,7 @@ class NumberOrSpecialRule() : Rule() {
             }
         }
         if (!condition) {
-            throw RuleException("Пароль не содержит цифр")
+            throw RuleException("Password has no NUMBERS")
         }
         condition = false
         for (symbol in password) {
@@ -103,7 +106,7 @@ class NumberOrSpecialRule() : Rule() {
             }
         }
         if (!condition) {
-            throw RuleException("Пароль не содержит специальных символов")
+            throw RuleException("Password has no SPECIAL_SYMBOLS")
         }
     }
 
@@ -121,7 +124,7 @@ class DictionaryRule(fileName: String) : Rule() {
     override fun checkRule(password: String) {
         for (word in words) {
             if ((password.contains(word)) && (word != "")){
-                throw RuleException("Пароль содержит словарное слово")
+                throw RuleException("dict world in password")
             }
         }
 
@@ -130,49 +133,49 @@ class DictionaryRule(fileName: String) : Rule() {
 }
 
 
-class EntropyRule() : Rule() {
+class EntropyRule : Rule() {
     override val name: String
         get() = "Entropy"
-    var N = 0
+    var count = 0
     override fun checkRule(password: String) {
         for (symbol in password) {
             if (NUMBERS.contains(symbol)) {
-                N += NUMBERS.size
+                count += NUMBERS.size
                 break
             }
         }
         for (symbol in password) {
             if (SPECIAL_SYMBOLS.contains(symbol)) {
-                N += NUMBERS.size
+                count += NUMBERS.size
                 break
             }
         }
         for (symbol in password) {
             if (UP_REGISTER.contains(symbol)) {
-                N += NUMBERS.size
+                count += NUMBERS.size
                 break
             }
         }
         for (symbol in password) {
             if (DOWN_REGISTER.contains(symbol)) {
-                N += NUMBERS.size
+                count += NUMBERS.size
                 break
             }
         }
         var summ = 0.0
-        for (i in 1..N) {
-            summ += (1.toDouble() / N) * log2((1.toDouble() / N))
+        for (i in 1..count) {
+            summ += (1.toDouble() / count) * log2((1.toDouble() / count))
         }
         summ = -summ
         if (summ < 5) {
-            throw RuleException("Величина ентропии низка")
+            throw RuleException("Very low Entropy")
         }
     }
 
 }
 
 
-class PasswordValidator() {
+class PasswordValidator {
 
     private var rules: ArrayList<Rule> = ArrayList()
 
@@ -189,7 +192,7 @@ class PasswordValidator() {
 
     private fun checkRules() {
         if (rules.size == 0) {
-            throw ValidatorException("в валидаторе нет правил")
+            throw ValidatorException("Validator does not any have rules")
         }
         for (rule in rules) {
             var countEqualRules = 0
@@ -199,7 +202,7 @@ class PasswordValidator() {
                 }
             }
             if (countEqualRules >= 2) {
-                throw ValidatorException("Правила повторяются!!")
+                throw ValidatorException("2 or more same rules")
             }
         }
     }
@@ -209,48 +212,38 @@ class PasswordValidator() {
 
 fun main(args: Array<String>) {
     val password = "Q1-dq1s1w"
-    val validator = PasswordValidator()
+    var validator = PasswordValidator()
     validator.addRule(LenRule(5))
     validator.addRule(RegisterRule())
     validator.addRule(NumberOrSpecialRule())
-    validator.addRule(DictionaryRule("src/pswd-dict.txt"))
+    validator.addRule(DictionaryRule(DICT_PATH))
     validator.addRule(EntropyRule())
     validator.checkPassword(password)
-}
-
-
-fun test1() {
-    val validator = PasswordValidator()
+    
+    validator = PasswordValidator()
     validator.addRule(LenRule(5))
     validator.checkPassword("5555555")
     validator.checkPassword("1")
-}
 
-fun test2() {
-    val validator = PasswordValidator()
+    validator = PasswordValidator()
     validator.addRule(RegisterRule())
     validator.checkPassword("qweQWE")
     validator.checkPassword("qwe")
 
-}
-
-fun test3() {
-    val validator = PasswordValidator()
+    validator = PasswordValidator()
     validator.addRule(NumberOrSpecialRule())
     validator.checkPassword("qwe-")
     validator.checkPassword("qwe")
-}
 
-fun test4() {
-    val validator = PasswordValidator()
-    validator.addRule(DictionaryRule("src/pswd-dict.txt"))
+    validator = PasswordValidator()
+    validator.addRule(DictionaryRule(DICT_PATH))
     validator.checkPassword("qg21")
     validator.checkPassword("run")
-}
 
-fun test5() {
-    val validator = PasswordValidator()
+    validator = PasswordValidator()
     validator.addRule(EntropyRule())
     validator.checkPassword("Q1-dq1s1w")
     validator.checkPassword("qqq")
 }
+
+

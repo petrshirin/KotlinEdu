@@ -62,7 +62,7 @@ class SpecialHashMap() : HashMap<String, Int>() {
                         strCondition.drop(1).toInt(), ConditionType.MORE)
                 strCondition.startsWith("<") -> Condition(
                         strCondition.drop(1).toInt(), ConditionType.LESS)
-                else -> error("Idi na hui")
+                else -> error("GG WP")
             }
 
         }
@@ -113,23 +113,6 @@ fun main(args: Array<String>) {
     println(map.ploc[">=10, >0"]) // >>> {(10, 5)=300}
 
     println(map.ploc["<5, >=5, >=3"]) // >>> {(1, 5, 3)=400}\\
-}
-
-fun testHM1() {
-    val map = SpecialHashMap()
-    map["value1"] = 1
-    map["value2"] = 2
-    map["value3"] = 3
-    map["1"] = 10
-    map["2"] = 20
-    map["3"] = 30
-    map["1, 5"] = 100
-    map["5, 5"] = 200
-    map["10, 5"] = 300
-    println(map.iloc[0])  // >>> 10
-    println(map.iloc[2])  // >>> 300
-    println(map.iloc[5])  // >>> 200
-    println(map.iloc[8])  // >>> 3
 }
 
 
